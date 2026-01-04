@@ -7,7 +7,10 @@ add_subdirectory(${OBOE_DIR} ./oboe)
 include_directories(${OBOE_DIR}/include)
 
 # ネイティブライブラリの作成
-add_library(oboetest SHARED native-lib.cpp)
+add_library(oboetest SHARED
+    native-lib.cpp
+    AudioEngine.cpp
+)
 
 # ログライブラリとOboeをリンク
 target_link_libraries(oboetest

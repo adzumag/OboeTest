@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -17,6 +17,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // AudioEngineを起動
+        startAudioEngine()
+
         setContent {
             OboeTestTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -26,19 +30,50 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding)
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
                     ) {
                         Text(
                             text = stringFromJNI(),
                             style = MaterialTheme.typography.headlineMedium
                         )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Button(
+                            onClick = { playTone(440f, 0.1f) },
+                            modifier = Modifier.fillMaxWidth(0.8f)
+                        ) {
+                            Text("440Hz (0.1秒)")
+                        }
+
+                        Button(
+                            onClick = { playTone(440f, 0.5f) },
+                            modifier = Modifier.fillMaxWidth(0.8f)
+                        ) {
+                            Text("440Hz (0.5秒)")
+                        }
+
+                        Button(
+                            onClick = { playTone(880f, 0.1f) },
+                            modifier = Modifier.fillMaxWidth(0.8f)
+                        ) {
+                            Text("880Hz (0.1秒)")
+                        }
                     }
                 }
             }
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        stopAudioEngine()
+    }
+
     private external fun stringFromJNI(): String
+    private external fun startAudioEngine(): Boolean
+    private external fun stopAudioEngine()
+    private external fun playTone(frequency: Float, duration: Float)
 
     companion object {
         init {
