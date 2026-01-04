@@ -48,6 +48,7 @@ private:
     int32_t sampleRate = 48000;
 
     int findAvailableVoice();
+    void initializeVoice(Voice& voice, float frequency, float durationSeconds, bool useADSR);
 };
 
 #endif //OBOETEST_AUDIOENGINE_H

@@ -57,6 +57,15 @@ int AudioEngine::findAvailableVoice() {
     return -1; // No available voice
 }
 
+void AudioEngine::initializeVoice(Voice& voice, float frequency, float durationSeconds, bool useADSR) {
+    voice.frequency = frequency;
+    voice.remainingFrames = static_cast<int32_t>(durationSeconds * sampleRate);
+    voice.totalFrames = voice.remainingFrames;
+    voice.phase = 0.0;
+    voice.useADSR = useADSR;
+    voice.isActive = true;
+}
+
 void AudioEngine::playTone(float frequency, float durationSeconds) {
     std::lock_guard<std::mutex> lock(voicesMutex);
 
@@ -67,12 +76,7 @@ void AudioEngine::playTone(float frequency, float durationSeconds) {
     }
 
     Voice& voice = voices[voiceIndex];
-    voice.frequency = frequency;
-    voice.remainingFrames = static_cast<int32_t>(durationSeconds * sampleRate);
-    voice.totalFrames = voice.remainingFrames;
-    voice.phase = 0.0;
-    voice.useADSR = false;
-    voice.isActive = true;
+    initializeVoice(voice, frequency, durationSeconds, false);
 
     LOGI("Playing tone: %f Hz for %f seconds on voice %d", frequency, durationSeconds, voiceIndex);
 }
@@ -87,12 +91,7 @@ void AudioEngine::playToneWithADSR(float frequency, float durationSeconds) {
     }
 
     Voice& voice = voices[voiceIndex];
-    voice.frequency = frequency;
-    voice.remainingFrames = static_cast<int32_t>(durationSeconds * sampleRate);
-    voice.totalFrames = voice.remainingFrames;
-    voice.phase = 0.0;
-    voice.useADSR = true;
-    voice.isActive = true;
+    initializeVoice(voice, frequency, durationSeconds, true);
 
     LOGI("Playing tone with ADSR: %f Hz for %f seconds on voice %d", frequency, durationSeconds, voiceIndex);
 }
