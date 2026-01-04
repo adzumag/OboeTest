@@ -36,9 +36,13 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MainScreen() {
-        var progress by remember { mutableStateOf("") }
-        var result by remember { mutableStateOf<TimingAnalyzer.TimingResult?>(null) }
-        var isRunning by remember { mutableStateOf(false) }
+        var v2Progress by remember { mutableStateOf("") }
+        var v2Result by remember { mutableStateOf<TimingAnalyzer.TimingResult?>(null) }
+        var v2IsRunning by remember { mutableStateOf(false) }
+
+        var v4Progress by remember { mutableStateOf("") }
+        var v4Result by remember { mutableStateOf<TimingAnalyzer.TimingResult?>(null) }
+        var v4IsRunning by remember { mutableStateOf(false) }
 
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             Column(
@@ -97,9 +101,9 @@ class MainActivity : ComponentActivity() {
 
                 Button(
                     onClick = {
-                        isRunning = true
-                        progress = "測定開始..."
-                        result = null
+                        v2IsRunning = true
+                        v2Progress = "測定開始..."
+                        v2Result = null
 
                         lifecycleScope.launch {
                             val measuredResult = timingAnalyzer.measureMetronomeTiming(
@@ -109,29 +113,29 @@ class MainActivity : ComponentActivity() {
                                     playTone(880f, 0.05f)
                                 },
                                 onProgress = { current, total ->
-                                    progress = "測定中: $current / $total"
+                                    v2Progress = "測定中: $current / $total"
                                 }
                             )
-                            result = measuredResult
-                            progress = "測定完了"
-                            isRunning = false
+                            v2Result = measuredResult
+                            v2Progress = "測定完了"
+                            v2IsRunning = false
                         }
                     },
-                    enabled = !isRunning,
+                    enabled = !v2IsRunning,
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
                     Text("BPM 120で100回測定")
                 }
 
-                if (progress.isNotEmpty()) {
+                if (v2Progress.isNotEmpty()) {
                     Text(
-                        text = progress,
+                        text = v2Progress,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (isRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                        color = if (v2IsRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                     )
                 }
 
-                result?.let { res ->
+                v2Result?.let { res ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
@@ -255,9 +259,9 @@ class MainActivity : ComponentActivity() {
 
                 Button(
                     onClick = {
-                        isRunning = true
-                        progress = "3連符測定開始..."
-                        result = null
+                        v4IsRunning = true
+                        v4Progress = "3連符測定開始..."
+                        v4Result = null
 
                         lifecycleScope.launch {
                             val measuredResult = timingAnalyzer.measureTripletTiming(
@@ -268,18 +272,68 @@ class MainActivity : ComponentActivity() {
                                     playTone(1200f, 0.03f)
                                 },
                                 onProgress = { current, total ->
-                                    progress = "3連符測定中: $current / $total"
+                                    v4Progress = "3連符測定中: $current / $total"
                                 }
                             )
-                            result = measuredResult
-                            progress = "3連符測定完了"
-                            isRunning = false
+                            v4Result = measuredResult
+                            v4Progress = "3連符測定完了"
+                            v4IsRunning = false
                         }
                     },
-                    enabled = !isRunning,
+                    enabled = !v4IsRunning,
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
                     Text("8分3連で90回測定")
+                }
+
+                if (v4Progress.isNotEmpty()) {
+                    Text(
+                        text = v4Progress,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (v4IsRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                    )
+                }
+
+                v4Result?.let { res ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "測定結果",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            HorizontalDivider()
+                            Text("総ビート数: ${res.totalBeats}")
+                            Text("平均誤差: %.2f ms".format(res.averageErrorMs))
+                            Text("最大誤差: %.2f ms".format(res.maxErrorMs))
+                            Text("最小誤差: %.2f ms".format(res.minErrorMs))
+                            Text("成功率 (±5ms): %.1f%%".format(res.successRate))
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            val status = when {
+                                kotlin.math.abs(res.averageErrorMs) <= 5.0 -> "✅ 合格（±5ms以内）"
+                                kotlin.math.abs(res.averageErrorMs) <= 10.0 -> "⚠️ 要調整（±10ms以内）"
+                                else -> "❌ 不合格（±10ms超過）"
+                            }
+                            Text(
+                                text = status,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = when {
+                                    kotlin.math.abs(res.averageErrorMs) <= 5.0 -> MaterialTheme.colorScheme.primary
+                                    kotlin.math.abs(res.averageErrorMs) <= 10.0 -> MaterialTheme.colorScheme.tertiary
+                                    else -> MaterialTheme.colorScheme.error
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
