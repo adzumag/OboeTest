@@ -44,3 +44,14 @@ Java_com_github_adzumag_oboetest_MainActivity_playTone(
         audioEngine->playTone(frequency, duration);
     }
 }
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_github_adzumag_oboetest_MainActivity_playToneWithADSR(
+        JNIEnv* env,
+        jobject /* this */,
+        jfloat frequency,
+        jfloat duration) {
+    if (audioEngine != nullptr) {
+        audioEngine->playToneWithADSR(frequency, duration);
+    }
+}

@@ -9,11 +9,21 @@
 
 constexpr int MAX_VOICES = 5;
 
+struct ADSR {
+    float attackTime = 0.005f;   // 5ms
+    float decayTime = 0.02f;     // 20ms
+    float sustainLevel = 0.7f;   // 70%
+    float releaseTime = 0.05f;   // 50ms
+};
+
 struct Voice {
     std::atomic<bool> isActive{false};
     float frequency = 440.0f;
     std::atomic<int32_t> remainingFrames{0};
+    int32_t totalFrames = 0;
     double phase = 0.0;
+    bool useADSR = false;
+    ADSR adsr;
 };
 
 class AudioEngine : public oboe::AudioStreamDataCallback {
@@ -24,6 +34,7 @@ public:
     bool start();
     void stop();
     void playTone(float frequency, float durationSeconds);
+    void playToneWithADSR(float frequency, float durationSeconds);
 
     oboe::DataCallbackResult onAudioReady(
             oboe::AudioStream *audioStream,

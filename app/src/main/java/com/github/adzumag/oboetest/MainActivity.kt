@@ -335,6 +335,61 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                Text(
+                    text = "V5: ADSRエンベロープ",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { playTone(440f, 0.2f) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("通常\n440Hz", style = MaterialTheme.typography.bodySmall)
+                    }
+
+                    Button(
+                        onClick = { playToneWithADSR(440f, 0.2f) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("ADSR\n440Hz", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            // 通常音の和音
+                            playTone(261.63f, 0.5f) // C4
+                            playTone(329.63f, 0.5f) // E4
+                            playTone(392.00f, 0.5f) // G4
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("通常\n和音", style = MaterialTheme.typography.bodySmall)
+                    }
+
+                    Button(
+                        onClick = {
+                            // ADSRエンベロープ適用の和音
+                            playToneWithADSR(261.63f, 0.5f) // C4
+                            playToneWithADSR(329.63f, 0.5f) // E4
+                            playToneWithADSR(392.00f, 0.5f) // G4
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("ADSR\n和音", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
             }
         }
     }
@@ -348,6 +403,7 @@ class MainActivity : ComponentActivity() {
     private external fun startAudioEngine(): Boolean
     private external fun stopAudioEngine()
     private external fun playTone(frequency: Float, duration: Float)
+    private external fun playToneWithADSR(frequency: Float, duration: Float)
 
     companion object {
         init {

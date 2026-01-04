@@ -69,10 +69,32 @@ void AudioEngine::playTone(float frequency, float durationSeconds) {
     Voice& voice = voices[voiceIndex];
     voice.frequency = frequency;
     voice.remainingFrames = static_cast<int32_t>(durationSeconds * sampleRate);
+    voice.totalFrames = voice.remainingFrames;
     voice.phase = 0.0;
+    voice.useADSR = false;
     voice.isActive = true;
 
     LOGI("Playing tone: %f Hz for %f seconds on voice %d", frequency, durationSeconds, voiceIndex);
+}
+
+void AudioEngine::playToneWithADSR(float frequency, float durationSeconds) {
+    std::lock_guard<std::mutex> lock(voicesMutex);
+
+    int voiceIndex = findAvailableVoice();
+    if (voiceIndex == -1) {
+        LOGE("No available voice slots");
+        return;
+    }
+
+    Voice& voice = voices[voiceIndex];
+    voice.frequency = frequency;
+    voice.remainingFrames = static_cast<int32_t>(durationSeconds * sampleRate);
+    voice.totalFrames = voice.remainingFrames;
+    voice.phase = 0.0;
+    voice.useADSR = true;
+    voice.isActive = true;
+
+    LOGI("Playing tone with ADSR: %f Hz for %f seconds on voice %d", frequency, durationSeconds, voiceIndex);
 }
 
 oboe::DataCallbackResult AudioEngine::onAudioReady(
@@ -93,8 +115,40 @@ oboe::DataCallbackResult AudioEngine::onAudioReady(
 
         for (int i = 0; i < numFrames; i++) {
             if (voice.remainingFrames > 0) {
-                // サイン波生成してミックス
-                float sample = 0.2f * sinf(2.0f * M_PI * voice.phase);
+                // サイン波生成
+                float sample = sinf(2.0f * M_PI * voice.phase);
+
+                // ADSRエンベロープを適用
+                if (voice.useADSR) {
+                    int32_t elapsedFrames = voice.totalFrames - voice.remainingFrames;
+                    float envelope = 1.0f;
+
+                    int32_t attackFrames = static_cast<int32_t>(voice.adsr.attackTime * sampleRate);
+                    int32_t decayFrames = static_cast<int32_t>(voice.adsr.decayTime * sampleRate);
+                    int32_t releaseFrames = static_cast<int32_t>(voice.adsr.releaseTime * sampleRate);
+
+                    // Attack
+                    if (elapsedFrames < attackFrames) {
+                        envelope = static_cast<float>(elapsedFrames) / attackFrames;
+                    }
+                    // Decay
+                    else if (elapsedFrames < attackFrames + decayFrames) {
+                        float decayProgress = static_cast<float>(elapsedFrames - attackFrames) / decayFrames;
+                        envelope = 1.0f - (1.0f - voice.adsr.sustainLevel) * decayProgress;
+                    }
+                    // Sustain
+                    else if (voice.remainingFrames > releaseFrames) {
+                        envelope = voice.adsr.sustainLevel;
+                    }
+                    // Release
+                    else {
+                        envelope = voice.adsr.sustainLevel * (static_cast<float>(voice.remainingFrames) / releaseFrames);
+                    }
+
+                    sample *= envelope;
+                }
+
+                sample *= 0.2f; // 音量調整
                 outputBuffer[i] += sample;
 
                 voice.phase += voice.frequency / sampleRate;
