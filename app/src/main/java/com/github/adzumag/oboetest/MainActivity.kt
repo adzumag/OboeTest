@@ -387,8 +387,21 @@ class MainActivity : ComponentActivity() {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun AppPreview() {
     OboeTestTheme {
-        Text("Oboe version: 1.9.0")
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "V0: ライブラリ読み込み",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = "✓ Oboe読み込み成功",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
+        }
     }
 }
