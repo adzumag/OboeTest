@@ -91,7 +91,43 @@ class MainActivity : ComponentActivity() {
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Text(
-                    text = "タイミング精度測定",
+                    text = "V3: 高速テンポ・同時再生",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Button(
+                    onClick = {
+                        lifecycleScope.launch {
+                            // BPM 240での16分音符 = 62.5ms間隔
+                            repeat(32) {
+                                playTone(1000f, 0.03f)
+                                kotlinx.coroutines.delay(62)
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("BPM 240 高速連打")
+                }
+
+                Button(
+                    onClick = {
+                        // 5音同時再生（和音）
+                        playTone(261.63f, 0.5f) // C4
+                        playTone(329.63f, 0.5f) // E4
+                        playTone(392.00f, 0.5f) // G4
+                        playTone(523.25f, 0.5f) // C5
+                        playTone(659.25f, 0.5f) // E5
+                    },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("5音同時再生テスト")
+                }
+
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                Text(
+                    text = "V2: タイミング精度測定",
                     style = MaterialTheme.typography.titleMedium
                 )
 

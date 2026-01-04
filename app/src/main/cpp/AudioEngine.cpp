@@ -48,11 +48,31 @@ void AudioEngine::stop() {
     }
 }
 
+int AudioEngine::findAvailableVoice() {
+    for (int i = 0; i < MAX_VOICES; i++) {
+        if (!voices[i].isActive.load()) {
+            return i;
+        }
+    }
+    return -1; // No available voice
+}
+
 void AudioEngine::playTone(float frequency, float durationSeconds) {
-    currentFrequency = frequency;
-    remainingFrames = static_cast<int32_t>(durationSeconds * sampleRate);
-    isPlaying = true;
-    LOGI("Playing tone: %f Hz for %f seconds (%d frames)", frequency, durationSeconds, remainingFrames.load());
+    std::lock_guard<std::mutex> lock(voicesMutex);
+
+    int voiceIndex = findAvailableVoice();
+    if (voiceIndex == -1) {
+        LOGE("No available voice slots");
+        return;
+    }
+
+    Voice& voice = voices[voiceIndex];
+    voice.frequency = frequency;
+    voice.remainingFrames = static_cast<int32_t>(durationSeconds * sampleRate);
+    voice.phase = 0.0;
+    voice.isActive = true;
+
+    LOGI("Playing tone: %f Hz for %f seconds on voice %d", frequency, durationSeconds, voiceIndex);
 }
 
 oboe::DataCallbackResult AudioEngine::onAudioReady(
@@ -62,24 +82,32 @@ oboe::DataCallbackResult AudioEngine::onAudioReady(
 
     auto *outputBuffer = static_cast<float *>(audioData);
 
+    // Clear buffer
     for (int i = 0; i < numFrames; i++) {
-        if (isPlaying && remainingFrames > 0) {
-            // サイン波生成
-            float frequency = currentFrequency;
-            outputBuffer[i] = 0.3f * sinf(2.0f * M_PI * phase);
+        outputBuffer[i] = 0.0f;
+    }
 
-            phase += frequency / sampleRate;
-            if (phase >= 1.0) {
-                phase -= 1.0;
-            }
+    // Mix all active voices
+    for (auto& voice : voices) {
+        if (!voice.isActive.load()) continue;
 
-            remainingFrames--;
-            if (remainingFrames <= 0) {
-                isPlaying = false;
-                phase = 0.0;
+        for (int i = 0; i < numFrames; i++) {
+            if (voice.remainingFrames > 0) {
+                // サイン波生成してミックス
+                float sample = 0.2f * sinf(2.0f * M_PI * voice.phase);
+                outputBuffer[i] += sample;
+
+                voice.phase += voice.frequency / sampleRate;
+                if (voice.phase >= 1.0) {
+                    voice.phase -= 1.0;
+                }
+
+                voice.remainingFrames--;
+                if (voice.remainingFrames <= 0) {
+                    voice.isActive = false;
+                    voice.phase = 0.0;
+                }
             }
-        } else {
-            outputBuffer[i] = 0.0f;
         }
     }
 
