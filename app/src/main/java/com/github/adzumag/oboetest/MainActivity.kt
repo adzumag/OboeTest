@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Text(
-                    text = "単一音テスト",
+                    text = "V1: 単一音テスト",
                     style = MaterialTheme.typography.titleMedium
                 )
 
