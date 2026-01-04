@@ -91,42 +91,6 @@ class MainActivity : ComponentActivity() {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Text(
-                    text = "V3: 高速テンポ・同時再生",
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Button(
-                    onClick = {
-                        lifecycleScope.launch {
-                            // BPM 240での16分音符 = 62.5ms間隔
-                            repeat(32) {
-                                playTone(1000f, 0.03f)
-                                kotlinx.coroutines.delay(62)
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(0.8f)
-                ) {
-                    Text("BPM 240 高速連打")
-                }
-
-                Button(
-                    onClick = {
-                        // 5音同時再生（和音）
-                        playTone(261.63f, 0.5f) // C4
-                        playTone(329.63f, 0.5f) // E4
-                        playTone(392.00f, 0.5f) // G4
-                        playTone(523.25f, 0.5f) // C5
-                        playTone(659.25f, 0.5f) // E5
-                    },
-                    modifier = Modifier.fillMaxWidth(0.8f)
-                ) {
-                    Text("5音同時再生テスト")
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                Text(
                     text = "V2: タイミング精度測定",
                     style = MaterialTheme.typography.titleMedium
                 )
@@ -207,6 +171,115 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                Text(
+                    text = "V3: 高速テンポ・同時再生",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Button(
+                    onClick = {
+                        lifecycleScope.launch {
+                            // BPM 240での16分音符 = 62.5ms間隔
+                            repeat(32) {
+                                playTone(1000f, 0.03f)
+                                kotlinx.coroutines.delay(62)
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("BPM 240 高速連打")
+                }
+
+                Button(
+                    onClick = {
+                        // 5音同時再生（和音）
+                        playTone(261.63f, 0.5f) // C4
+                        playTone(329.63f, 0.5f) // E4
+                        playTone(392.00f, 0.5f) // G4
+                        playTone(523.25f, 0.5f) // C5
+                        playTone(659.25f, 0.5f) // E5
+                    },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("5音同時再生テスト")
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                Text(
+                    text = "V4: 3連符タイミング検証",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            lifecycleScope.launch {
+                                // 4分音符3連符: BPM 120 → 333.33ms間隔
+                                val interval = timingAnalyzer.calculateTripletInterval(120, "quarter")
+                                repeat(9) { // 3拍分（3×3=9音）
+                                    playTone(800f, 0.05f)
+                                    kotlinx.coroutines.delay(interval.toLong())
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("4分3連\n再生", style = MaterialTheme.typography.bodySmall)
+                    }
+
+                    Button(
+                        onClick = {
+                            lifecycleScope.launch {
+                                // 8分音符3連符: BPM 120 → 166.67ms間隔
+                                val interval = timingAnalyzer.calculateTripletInterval(120, "eighth")
+                                repeat(12) { // 2拍分（2×6=12音）
+                                    playTone(1200f, 0.03f)
+                                    kotlinx.coroutines.delay(interval.toLong())
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("8分3連\n再生", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        isRunning = true
+                        progress = "3連符測定開始..."
+                        result = null
+
+                        lifecycleScope.launch {
+                            val measuredResult = timingAnalyzer.measureTripletTiming(
+                                bpm = 120,
+                                tripletType = "eighth",
+                                totalTriplets = 90, // 30セット（90音）
+                                onBeat = { beat ->
+                                    playTone(1200f, 0.03f)
+                                },
+                                onProgress = { current, total ->
+                                    progress = "3連符測定中: $current / $total"
+                                }
+                            )
+                            result = measuredResult
+                            progress = "3連符測定完了"
+                            isRunning = false
+                        }
+                    },
+                    enabled = !isRunning,
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("8分3連で90回測定")
                 }
             }
         }
