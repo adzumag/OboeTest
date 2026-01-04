@@ -156,10 +156,6 @@ git clone https://github.com/google/oboe.git
 
 これらの結果により、Oboeは正確なタイミングを必要とするリズムベースのオーディオアプリケーションにとって優れた選択肢であることが検証されました。
 
-### ライセンス
-
-MIT License - 詳細はLICENSEファイルを参照
-
 ### 参考資料
 
 - [Oboe GitHubリポジトリ](https://github.com/google/oboe)
@@ -328,10 +324,6 @@ This PoC demonstrates that Oboe can achieve:
 - Natural sound envelope with ADSR
 
 These results validate Oboe as an excellent choice for rhythm-based audio applications requiring precise timing.
-
-### License
-
-MIT License - see LICENSE file for details
 
 ### References
 
