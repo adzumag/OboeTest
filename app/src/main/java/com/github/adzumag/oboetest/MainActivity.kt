@@ -35,6 +35,49 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
+    fun TimingResultCard(result: TimingAnalyzer.TimingResult) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "測定結果",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                HorizontalDivider()
+                Text("総ビート数: ${result.totalBeats}")
+                Text("平均誤差: %.2f ms".format(result.averageErrorMs))
+                Text("最大誤差: %.2f ms".format(result.maxErrorMs))
+                Text("最小誤差: %.2f ms".format(result.minErrorMs))
+                Text("成功率 (±5ms): %.1f%%".format(result.successRate))
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val status = when {
+                    kotlin.math.abs(result.averageErrorMs) <= 5.0 -> "✅ 合格（±5ms以内）"
+                    kotlin.math.abs(result.averageErrorMs) <= 10.0 -> "⚠️ 要調整（±10ms以内）"
+                    else -> "❌ 不合格（±10ms超過）"
+                }
+                Text(
+                    text = status,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = when {
+                        kotlin.math.abs(result.averageErrorMs) <= 5.0 -> MaterialTheme.colorScheme.primary
+                        kotlin.math.abs(result.averageErrorMs) <= 10.0 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.error
+                    }
+                )
+            }
+        }
+    }
+
+    @Composable
     fun MainScreen() {
         var v2Progress by remember { mutableStateOf("") }
         var v2Result by remember { mutableStateOf<TimingAnalyzer.TimingResult?>(null) }
@@ -55,8 +98,14 @@ class MainActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
+                    text = "V0: ライブラリ読み込み",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Text(
                     text = stringFromJNI(),
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.secondary
                 )
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -136,45 +185,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 v2Result?.let { res ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "測定結果",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            HorizontalDivider()
-                            Text("総ビート数: ${res.totalBeats}")
-                            Text("平均誤差: %.2f ms".format(res.averageErrorMs))
-                            Text("最大誤差: %.2f ms".format(res.maxErrorMs))
-                            Text("最小誤差: %.2f ms".format(res.minErrorMs))
-                            Text("成功率 (±5ms): %.1f%%".format(res.successRate))
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            val status = when {
-                                kotlin.math.abs(res.averageErrorMs) <= 5.0 -> "✅ 合格（±5ms以内）"
-                                kotlin.math.abs(res.averageErrorMs) <= 10.0 -> "⚠️ 要調整（±10ms以内）"
-                                else -> "❌ 不合格（±10ms超過）"
-                            }
-                            Text(
-                                text = status,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = when {
-                                    kotlin.math.abs(res.averageErrorMs) <= 5.0 -> MaterialTheme.colorScheme.primary
-                                    kotlin.math.abs(res.averageErrorMs) <= 10.0 -> MaterialTheme.colorScheme.tertiary
-                                    else -> MaterialTheme.colorScheme.error
-                                }
-                            )
-                        }
-                    }
+                    TimingResultCard(result = res)
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -295,45 +306,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 v4Result?.let { res ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "測定結果",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            HorizontalDivider()
-                            Text("総ビート数: ${res.totalBeats}")
-                            Text("平均誤差: %.2f ms".format(res.averageErrorMs))
-                            Text("最大誤差: %.2f ms".format(res.maxErrorMs))
-                            Text("最小誤差: %.2f ms".format(res.minErrorMs))
-                            Text("成功率 (±5ms): %.1f%%".format(res.successRate))
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            val status = when {
-                                kotlin.math.abs(res.averageErrorMs) <= 5.0 -> "✅ 合格（±5ms以内）"
-                                kotlin.math.abs(res.averageErrorMs) <= 10.0 -> "⚠️ 要調整（±10ms以内）"
-                                else -> "❌ 不合格（±10ms超過）"
-                            }
-                            Text(
-                                text = status,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = when {
-                                    kotlin.math.abs(res.averageErrorMs) <= 5.0 -> MaterialTheme.colorScheme.primary
-                                    kotlin.math.abs(res.averageErrorMs) <= 10.0 -> MaterialTheme.colorScheme.tertiary
-                                    else -> MaterialTheme.colorScheme.error
-                                }
-                            )
-                        }
-                    }
+                    TimingResultCard(result = res)
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))

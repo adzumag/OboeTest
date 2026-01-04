@@ -9,7 +9,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_github_adzumag_oboetest_MainActivity_stringFromJNI(
         JNIEnv* env,
         jobject /* this */) {
-    std::string hello = "Oboe library loaded successfully!";
+    std::string hello = "✓ Oboe読み込み成功";
     return env->NewStringUTF(hello.c_str());
 }
 
