@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
                     style = MaterialTheme.typography.headlineSmall
                 )
 
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Text(
                     text = "単一音テスト",
@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Text(
                     text = "V3: 高速テンポ・同時再生",
@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
                     Text("5音同時再生テスト")
                 }
 
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Text(
                     text = "V2: タイミング精度測定",
@@ -182,7 +182,7 @@ class MainActivity : ComponentActivity() {
                                 text = "測定結果",
                                 style = MaterialTheme.typography.titleMedium
                             )
-                            Divider()
+                            HorizontalDivider()
                             Text("総ビート数: ${res.totalBeats}")
                             Text("平均誤差: %.2f ms".format(res.averageErrorMs))
                             Text("最大誤差: %.2f ms".format(res.maxErrorMs))
